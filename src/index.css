@@ -1,145 +1,291 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@import 'sukuna-ui/theme.css';
+@source '../node_modules/sukuna-ui/dist';
+
+/* --- Fire & Power & AI: override sukuna-ui tokens --- */
+:root,
+[data-theme='dark'] {
+  --sk-bg: #07050a;
+  --sk-surface: #120b10;
+  --sk-surface-2: #1c1016;
+  --sk-well: #030204;
+  --sk-line: rgba(255, 140, 60, 0.14);
+  --sk-line-soft: rgba(255, 140, 60, 0.07);
+  --sk-accent: #ff5a1f;
+  --sk-accent-deep: #c9220f;
+  --sk-accent-glow: rgba(255, 90, 31, 0.55);
+  --sk-focus-ring: #ff8a3d;
+  --sk-on-accent: #fff7ed;
+  --sk-premium: #ffc861;
+  --sk-premium-dim: #c99a3f;
+  --sk-text: #fff4ec;
+  --sk-text-dim: #b8a49a;
+  --sk-text-faint: #8a776e;
+  --sk-success: #4ade80;
+  --sk-gradient-accent: linear-gradient(135deg, #ffb347 0%, #ff5a1f 45%, #c9220f 100%);
+  --sk-shadow-card: 0 30px 60px -24px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 120, 40, 0.1);
+  --sk-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sk-font-display: 'Archivo', var(--sk-font-sans);
+}
+
+@theme {
+  --color-ember: #ff8a3d;
+  --color-flame: #ff5a1f;
+  --color-blaze: #ffb347;
+  --color-magma: #c9220f;
+  --color-plasma: #ff2d6f;
+  --color-neon: #38bdf8;
+  --color-void: #07050a;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 
 @layer base {
   html {
     scroll-behavior: smooth;
   }
+  body {
+    background: var(--sk-bg);
+    color: var(--sk-text);
+    font-family: var(--sk-font-sans);
+  }
+  ::selection {
+    background: rgba(255, 90, 31, 0.45);
+    color: #fff7ed;
+  }
 }
 
-/* --- Duck pond animations --- */
+/* --- Animations --- */
 
-@keyframes bob {
+@keyframes flicker {
   0%,
   100% {
-    transform: translateY(0) rotate(-2.5deg);
+    opacity: 1;
+    filter: brightness(1);
   }
-  50% {
-    transform: translateY(-10px) rotate(2.5deg);
+  40% {
+    opacity: 0.9;
+    filter: brightness(1.25);
+  }
+  60% {
+    opacity: 0.95;
+    filter: brightness(0.9);
   }
 }
 
-@keyframes bob-soft {
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px 2px var(--sk-accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 44px 10px var(--sk-accent-glow);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes float-slow {
   0%,
   100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-6px);
+    transform: translateY(-12px);
   }
 }
 
-@keyframes ripple {
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes heat-rise {
   0% {
-    transform: translateX(-50%) scale(0.35);
-    opacity: 0.5;
+    transform: translateY(0) scaleX(1);
+    opacity: 0.6;
   }
   100% {
-    transform: translateX(-50%) scale(2.6);
+    transform: translateY(-140px) scaleX(1.6);
     opacity: 0;
   }
 }
 
-@keyframes swim {
-  from {
-    transform: translateX(-25vw);
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
   }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes ring-spin {
   to {
-    transform: translateX(115vw);
+    --ring-angle: 360deg;
   }
 }
 
-@keyframes wave-slide {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+@property --ring-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
 }
 
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.15;
-  }
-  50% {
-    opacity: 0.9;
-  }
+.animate-flicker {
+  animation: flicker 2.8s ease-in-out infinite;
 }
 
-@keyframes wiggle {
-  0%,
-  100% {
-    transform: rotate(-5deg);
-  }
-  50% {
-    transform: rotate(5deg);
-  }
+.animate-pulse-glow {
+  animation: pulse-glow 2.4s ease-in-out infinite;
 }
 
-@keyframes drift {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(14px, -8px);
-  }
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
 }
 
-.animate-bob {
-  animation: bob 3.5s ease-in-out infinite;
+.animate-spin-slow {
+  animation: spin-slow 18s linear infinite;
 }
 
-.animate-bob-soft {
-  animation: bob-soft 3s ease-in-out infinite;
+.animate-blink {
+  animation: blink 1s steps(2) infinite;
 }
 
-.animate-twinkle {
-  animation: twinkle 3.2s ease-in-out infinite;
+.text-fire {
+  background: linear-gradient(110deg, #ffd166, #ff8a3d, #ff3d1f, #ff2d6f, #ffb347);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-shift 6s ease infinite;
 }
 
-.animate-swim {
-  animation: swim 28s linear infinite;
-  animation-fill-mode: both;
+.text-glow {
+  text-shadow:
+    0 0 18px rgba(255, 138, 61, 0.55),
+    0 0 46px rgba(255, 45, 111, 0.25);
 }
 
-.animate-drift {
-  animation: drift 9s ease-in-out infinite;
+.glass {
+  background: rgba(18, 11, 16, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
-.wave-track {
-  display: flex;
-  width: 200%;
-  animation: wave-slide 14s linear infinite;
+/* Card with an animated conic ring on hover */
+.fire-card {
+  position: relative;
+  isolation: isolate;
 }
-
-.hover-wiggle:hover {
-  animation: wiggle 0.45s ease-in-out 2;
-}
-
-.ripple {
+.fire-card::before {
+  content: '';
   position: absolute;
-  left: 50%;
-  width: 110px;
-  height: 18px;
-  border: 1.5px solid rgba(255, 211, 77, 0.3);
-  border-radius: 9999px;
-  transform: translateX(-50%);
-  animation: ripple 3.2s ease-out infinite;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--ring-angle, 0deg),
+    transparent 0%,
+    #ff8a3d 20%,
+    #ff2d6f 40%,
+    transparent 60%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+.fire-card:hover::before {
+  opacity: 1;
+  animation: ring-spin 2.2s linear infinite;
+}
+
+/* Heat shimmer bars at the bottom of the hero */
+.heat {
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  height: 90px;
+  border-radius: 999px;
+  background: linear-gradient(to top, rgba(255, 90, 31, 0.7), transparent);
+  animation: heat-rise 3s ease-out infinite;
   pointer-events: none;
 }
 
+/* Scanline overlay for the AI feel */
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.025) 0px,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+.scan-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 138, 61, 0.08), transparent);
+  animation: scan 7s linear infinite;
+  pointer-events: none;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 138, 61, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 138, 61, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-bob,
-  .animate-bob-soft,
-  .animate-twinkle,
-  .animate-swim,
-  .animate-drift,
-  .wave-track,
-  .ripple {
+  .animate-flicker,
+  .animate-pulse-glow,
+  .animate-float-slow,
+  .animate-spin-slow,
+  .animate-blink,
+  .text-fire,
+  .heat,
+  .scan-beam,
+  .fire-card:hover::before {
     animation: none;
   }
 }

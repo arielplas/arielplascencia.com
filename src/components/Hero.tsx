@@ -1,166 +1,165 @@
-import { useMemo } from 'react'
-import type { FC, ReactNode } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { FC } from 'react'
+import { Badge, Button, Text, Tooltip } from 'sukuna-ui'
 import config from '../config/portfolio.config'
-import { Duck } from './Duck'
-import { WaveLayer } from './Waves'
+import { FireParticles } from './FireParticles'
+import { BoltIcon, MailIcon, ResumeIcon, SocialIcon } from './Icons'
 
-const SocialIcon: FC<{ icon: string }> = ({ icon }) => {
-  const icons: Record<string, ReactNode> = {
-    github: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-      </svg>
-    ),
-    linkedin: (
-      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-      </svg>
-    ),
-    resume: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M7 18h10M7 14h10M7 10h4m4-8H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8l-4-4z"
-        />
-      </svg>
-    ),
-  }
-  return <>{icons[icon] ?? null}</>
+const WORDS = ['fast', 'powerful', 'AI-assisted', 'accessible', 'beautiful']
+
+/** Cycles through WORDS with a typewriter effect. */
+const useTypewriter = (words: string[]) => {
+  const [index, setIndex] = useState(0)
+  const [text, setText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+
+  useEffect(() => {
+    const word = words[index]
+    const done = !deleting && text === word
+    const cleared = deleting && text === ''
+    const delay = done ? 1600 : deleting ? 45 : 90
+
+    const t = setTimeout(() => {
+      if (done) {
+        setDeleting(true)
+      } else if (cleared) {
+        setDeleting(false)
+        setIndex((i) => (i + 1) % words.length)
+      } else {
+        setText(deleting ? word.slice(0, text.length - 1) : word.slice(0, text.length + 1))
+      }
+    }, delay)
+    return () => clearTimeout(t)
+  }, [text, deleting, index, words])
+
+  return text
 }
 
 export const Hero: FC = () => {
   const resumeLink = config.socials.find((social) => social.label.toLowerCase() === 'resume')
+  const word = useTypewriter(WORDS)
 
-  const stars = useMemo(
+  const heatBars = useMemo(
     () =>
-      Array.from({ length: 42 }, (_, i) => ({
-        left: `${(i * 37 + 13) % 100}%`,
-        top: `${(i * 53 + 7) % 52}%`,
-        size: (i % 3) + 1,
-        delay: `${(i % 7) * 0.6}s`,
+      Array.from({ length: 26 }, (_, i) => ({
+        left: `${(i * 41 + 9) % 100}%`,
+        delay: `${(i % 9) * 0.35}s`,
+        duration: `${2.4 + (i % 5) * 0.4}s`,
       })),
     []
   )
 
+  const go = (href: string) => {
+    document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-to-b from-pond-950 via-[#082638] to-pond-700"
+      className="scanlines relative min-h-screen flex flex-col items-center justify-center overflow-clip bg-void"
     >
-      {/* stars */}
-      <div className="absolute inset-0" aria-hidden="true">
-        {stars.map((star, i) => (
+      {/* background layers */}
+      <div className="grid-bg absolute inset-0" aria-hidden="true" />
+      <div
+        className="absolute inset-x-0 bottom-0 h-[70vh] bg-[radial-gradient(ellipse_at_bottom,rgba(255,90,31,0.35),rgba(201,34,15,0.12)_40%,transparent_70%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="animate-float-slow absolute -top-40 left-1/2 -translate-x-1/2 h-[520px] w-[520px] rounded-full bg-[radial-gradient(circle,rgba(255,45,111,0.18),transparent_60%)] blur-2xl"
+        aria-hidden="true"
+      />
+      <div className="scan-beam" aria-hidden="true" />
+      <FireParticles density={1.1} />
+      <div className="absolute inset-x-0 bottom-0 h-40" aria-hidden="true">
+        {heatBars.map((bar, i) => (
           <span
             key={i}
-            className="animate-twinkle absolute rounded-full bg-duck-300"
-            style={{
-              left: star.left,
-              top: star.top,
-              width: star.size,
-              height: star.size,
-              animationDelay: star.delay,
-            }}
+            className="heat"
+            style={{ left: bar.left, animationDelay: bar.delay, animationDuration: bar.duration }}
           />
         ))}
       </div>
 
-      {/* moon */}
-      <div
-        className="animate-drift absolute right-[12%] top-[12%] h-24 w-24 rounded-full bg-duck-300/90 shadow-[0_0_80px_30px_rgba(255,224,138,0.25)]"
-        aria-hidden="true"
-      >
-        <div className="absolute left-4 top-6 h-4 w-4 rounded-full bg-duck-400/60" />
-        <div className="absolute left-12 top-12 h-3 w-3 rounded-full bg-duck-400/50" />
-      </div>
-
       {/* content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-6 pb-64 pt-28 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pond-900/70 border border-duck-400/30 text-duck-300 text-sm font-semibold mb-8 backdrop-blur-sm">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          Available for work — the pond is open
+      <div className="relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-28 text-center">
+        <div className="mb-8 inline-flex">
+          <Badge tone="premium" size="md" dot className="animate-pulse-glow border-premium/30">
+            Available for work
+          </Badge>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight mb-6 leading-tight">
+        <Text
+          as="h1"
+          font="display"
+          weight="black"
+          leading="tight"
+          tracking="tight"
+          className="text-5xl md:text-7xl lg:text-8xl mb-6"
+        >
           Hi, I'm{' '}
-          <span className="bg-gradient-to-r from-duck-300 via-duck-400 to-beak-500 bg-clip-text text-transparent">
-            {config.name}
-          </span>
-        </h1>
+          <span className="text-fire text-glow">{config.name}</span>
+        </Text>
 
-        <p className="text-xl md:text-2xl text-duck-300/90 font-bold mb-4">{config.title}</p>
-        <p className="text-slate-300/80 text-lg max-w-xl mx-auto mb-10">{config.tagline}</p>
+        <Text
+          as="p"
+          font="display"
+          weight="bold"
+          className="text-xl md:text-2xl text-blaze mb-4 inline-flex items-center gap-2"
+        >
+          <BoltIcon className="w-5 h-5 text-accent" />
+          {config.title}
+        </Text>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
-          <a
-            href="#projects"
-            className="px-6 py-3 rounded-full bg-duck-400 hover:bg-duck-300 text-pond-950 font-extrabold transition-all hover:scale-105 shadow-lg shadow-duck-500/25"
-          >
+        <Text as="p" tone="dim" className="text-lg md:text-xl max-w-2xl mx-auto mb-10 font-mono">
+          I forge <span className="text-text font-semibold">{word}</span>
+          <span className="animate-blink text-accent">|</span> web experiences.
+        </Text>
+
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+          <Button size="lg" onClick={() => go('#projects')} className="animate-pulse-glow">
             View my work
-          </a>
+          </Button>
           {resumeLink && (
-            <a
-              href={resumeLink.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3 rounded-full bg-white/10 border border-duck-400/50 hover:bg-white/15 text-duck-300 hover:text-white font-bold transition-all hover:scale-105 backdrop-blur-sm"
+            <Button
+              size="lg"
+              variant="secondary"
+              leadingIcon={<ResumeIcon className="w-4 h-4" />}
+              onClick={() => window.open(resumeLink.url, '_blank', 'noopener,noreferrer')}
             >
               View Resume
-            </a>
+            </Button>
           )}
-          <a
-            href={`mailto:${config.email}`}
-            className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-slate-200 hover:text-white font-bold transition-all hover:scale-105"
+          <Button
+            size="lg"
+            variant="ghost"
+            leadingIcon={<MailIcon className="w-4 h-4" />}
+            onClick={() => {
+              window.location.href = `mailto:${config.email}`
+            }}
           >
             Get in touch
-          </a>
+          </Button>
         </div>
 
-        <div className="flex items-center justify-center gap-5">
+        <div className="flex items-center justify-center gap-6">
           {config.socials.map((social) => (
-            <a
-              key={social.label}
-              href={social.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={social.label}
-              className="text-slate-400 hover:text-duck-300 transition-colors hover:scale-110 transform"
-            >
-              <SocialIcon icon={social.icon} />
-            </a>
+            <Tooltip key={social.label} content={social.label}>
+              <a
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.label}
+                className="text-text-dim hover:text-blaze transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(255,138,61,0.8)]"
+              >
+                <SocialIcon icon={social.icon} className="w-6 h-6" />
+              </a>
+            </Tooltip>
           ))}
         </div>
       </div>
 
-      {/* distant duck swimming across, behind the waves */}
-      <div
-        className="animate-swim absolute bottom-40 md:bottom-44 opacity-40"
-        style={{ animationDuration: '38s' }}
-        aria-hidden="true"
-      >
-        <Duck className="w-10" body="#10405c" beak="#0a2a3d" wing="#0d3549" eye="#051019" />
-      </div>
-
-      {/* the star of the show */}
-      <div
-        className="absolute bottom-16 md:bottom-20 left-1/2 -translate-x-1/2 z-10"
-        aria-hidden="true"
-      >
-        <span className="ripple bottom-1" />
-        <span className="ripple bottom-1" style={{ animationDelay: '1.6s' }} />
-        <div className="animate-bob">
-          <Duck className="w-36 md:w-48 drop-shadow-[0_10px_25px_rgba(5,16,25,0.6)]" />
-        </div>
-      </div>
-
-      {/* layered water */}
-      <WaveLayer fill="#10405c" opacity={0.5} duration="19s" className="h-36 md:h-44" />
-      <WaveLayer fill="#0a2a3d" opacity={0.8} duration="13s" className="h-28 md:h-32" />
-      <WaveLayer fill="#07202e" duration="9s" className="h-16 md:h-20" />
-
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 animate-bounce z-10">
-        <svg className="w-6 h-6 text-duck-300/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce z-10">
+        <svg className="w-6 h-6 text-accent/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </div>

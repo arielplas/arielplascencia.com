@@ -20,6 +20,12 @@ export interface Experience {
   description: string
 }
 
+export interface SkillLevel {
+  name: string
+  /** 0-100, shown as a power meter. */
+  level: number
+}
+
 export interface PortfolioConfig {
   name: string
   title: string
@@ -29,6 +35,7 @@ export interface PortfolioConfig {
   email: string
   socials: SocialLink[]
   skills: string[]
+  skillLevels: SkillLevel[]
   projects: Project[]
   experience: Experience[]
 }
@@ -63,6 +70,17 @@ const config: PortfolioConfig = {
     'PostgreSQL',
     'Docker',
     'Git',
+  ],
+
+  skillLevels: [
+    { name: 'TypeScript', level: 95 },
+    { name: 'React / Next.js', level: 95 },
+    { name: 'Node.js', level: 88 },
+    { name: 'AI-assisted tooling', level: 90 },
+    { name: 'Tailwind CSS', level: 92 },
+    { name: 'PostgreSQL', level: 78 },
+    { name: 'Docker', level: 72 },
+    { name: 'CI/CD & Testing', level: 85 },
   ],
 
   projects: [

@@ -1,26 +1,33 @@
 import type { FC } from 'react'
+import { Badge, Card, Text } from 'sukuna-ui'
 import config from '../config/portfolio.config'
-import { Duck } from './Duck'
 import { Reveal } from './Reveal'
-import { WaveDivider } from './Waves'
+import { SectionHeading } from './SectionHeading'
 
 export const Experience: FC = () => {
   return (
-    <section id="experience" className="relative py-28 bg-pond-950">
-      <WaveDivider fill="#07202e" />
-      <div className="max-w-6xl mx-auto px-6">
+    <section id="experience" className="relative py-28 overflow-clip">
+      <div className="grid-bg absolute inset-0 opacity-60" aria-hidden="true" />
+      <div className="relative max-w-6xl mx-auto px-6">
         <Reveal>
-          <div className="text-center mb-16">
-            <p className="text-duck-400 font-mono text-sm mb-3 uppercase tracking-widest">
-              Career
-            </p>
-            <h2 className="text-4xl font-extrabold text-white">Flight Path</h2>
-            <p className="text-slate-400 mt-3 font-semibold">Where this duck has paddled</p>
-          </div>
+          <SectionHeading
+            eyebrow="Career"
+            title={
+              <>
+                Trail of <span className="text-fire">Fire</span>
+              </>
+            }
+            subtitle="Where I've been leveling up."
+            className="mb-16"
+          />
         </Reveal>
 
         <div className="relative max-w-3xl mx-auto">
-          <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px border-l-2 border-dashed border-duck-400/25" />
+          {/* glowing spine */}
+          <div
+            className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-blaze via-accent to-transparent shadow-[0_0_14px_rgba(255,90,31,0.8)]"
+            aria-hidden="true"
+          />
 
           <div className="flex flex-col gap-12">
             {config.experience.map((exp, index) => (
@@ -30,27 +37,39 @@ export const Experience: FC = () => {
                   index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                 }`}
               >
-                <div className="absolute left-4 md:left-1/2 -translate-x-1/2 mt-1 z-10">
-                  <Duck className="animate-bob-soft w-9" flip={index % 2 !== 0} />
+                {/* node */}
+                <div className="absolute left-4 md:left-1/2 -translate-x-1/2 mt-6 z-10">
+                  <span className="relative flex h-4 w-4">
+                    <span
+                      className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping"
+                      style={{ animationDelay: `${index * 0.4}s` }}
+                    />
+                    <span className="relative inline-flex h-4 w-4 rounded-full bg-gradient-accent shadow-[0_0_16px_rgba(255,138,61,0.9)]" />
+                  </span>
                 </div>
 
-                <div
-                  className={`ml-12 md:ml-0 md:w-1/2 ${
-                    index % 2 === 0 ? 'md:pr-12' : 'md:pl-12'
-                  }`}
-                >
+                <div className={`ml-12 md:ml-0 md:w-1/2 ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12'}`}>
                   <Reveal delay={index * 80}>
-                    <div className="bg-pond-800/40 border border-white/5 rounded-2xl p-6 hover:border-duck-400/40 hover:-translate-y-1 transition-all duration-300">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-extrabold text-white">{exp.role}</h3>
+                    <Card
+                      elevation="raised"
+                      padding="md"
+                      className="fire-card hover:-translate-y-1 transition-transform duration-300"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <Text as="h3" font="display" weight="bold" size="xl">
+                          {exp.role}
+                        </Text>
+                        <Badge tone={index === 0 ? 'accent' : 'neutral'} size="sm" className="font-mono">
+                          {exp.period}
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-duck-400 font-bold text-sm">{exp.company}</span>
-                        <span className="text-slate-600">·</span>
-                        <span className="text-slate-500 text-sm font-mono">{exp.period}</span>
-                      </div>
-                      <p className="text-slate-400 text-sm leading-relaxed">{exp.description}</p>
-                    </div>
+                      <Text as="p" size="sm" tone="premium" weight="semibold" className="mb-3">
+                        {exp.company}
+                      </Text>
+                      <Text as="p" size="md" tone="dim" leading="normal">
+                        {exp.description}
+                      </Text>
+                    </Card>
                   </Reveal>
                 </div>
               </div>

@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { FC } from 'react'
+import { Button } from 'sukuna-ui'
 import config from '../config/portfolio.config'
-import { Duck } from './Duck'
+import { Flame } from './Flame'
+
+const links = ['about', 'skills', 'projects', 'experience', 'contact']
 
 export const Navbar: FC = () => {
   const [scrolled, setScrolled] = useState(false)
@@ -9,26 +12,29 @@ export const Navbar: FC = () => {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', onScroll)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const links = ['about', 'skills', 'projects', 'experience', 'contact']
+  const hire = () => {
+    window.location.href = `mailto:${config.email}`
+  }
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-pond-950/90 backdrop-blur-md shadow-lg shadow-pond-950/50' : 'bg-transparent'
+        scrolled ? 'glass border-b border-line-soft shadow-[0_10px_40px_-20px_rgba(255,90,31,0.35)]' : 'bg-transparent'
       }`}
     >
       <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <a
           href="#hero"
-          className="group flex items-center gap-2 text-xl font-extrabold text-white tracking-tight hover:text-duck-300 transition-colors"
+          className="group flex items-center gap-2 font-display text-xl font-black tracking-tight text-text hover:text-blaze transition-colors"
         >
-          <Duck className="w-8 transition-transform group-hover:-rotate-12" />
+          <Flame className="w-8 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6" animate />
           {config.name.split(' ')[0]}
-          <span className="-ml-2 text-duck-400">.</span>
+          <span className="-ml-1 text-accent">_</span>
         </a>
 
         <ul className="hidden md:flex gap-8">
@@ -36,7 +42,7 @@ export const Navbar: FC = () => {
             <li key={link}>
               <a
                 href={`#${link}`}
-                className="text-sm font-semibold text-slate-400 capitalize hover:text-duck-300 transition-colors"
+                className="relative text-sm font-semibold text-text-dim capitalize hover:text-text transition-colors after:absolute after:-bottom-1 after:left-0 after:h-px after:w-0 after:bg-gradient-accent after:transition-all hover:after:w-full"
               >
                 {link}
               </a>
@@ -44,17 +50,17 @@ export const Navbar: FC = () => {
           ))}
         </ul>
 
-        <a
-          href={`mailto:${config.email}`}
-          className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-duck-400 hover:bg-duck-300 text-pond-950 text-sm font-extrabold transition-colors"
-        >
-          Hire me
-        </a>
+        <div className="hidden md:block">
+          <Button size="sm" onClick={hire}>
+            Hire me
+          </Button>
+        </div>
 
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-slate-400 hover:text-white transition-colors"
+          className="md:hidden text-text-dim hover:text-text transition-colors"
           aria-label="Toggle menu"
+          aria-expanded={menuOpen}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {menuOpen ? (
@@ -67,26 +73,23 @@ export const Navbar: FC = () => {
       </nav>
 
       {menuOpen && (
-        <div className="md:hidden bg-pond-950/95 backdrop-blur-md border-t border-white/10 px-6 py-4">
+        <div className="md:hidden glass border-t border-line px-6 py-4">
           <ul className="flex flex-col gap-4">
             {links.map((link) => (
               <li key={link}>
                 <a
                   href={`#${link}`}
                   onClick={() => setMenuOpen(false)}
-                  className="text-slate-400 font-semibold capitalize hover:text-duck-300 transition-colors"
+                  className="text-text-dim font-semibold capitalize hover:text-blaze transition-colors"
                 >
                   {link}
                 </a>
               </li>
             ))}
             <li>
-              <a
-                href={`mailto:${config.email}`}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-duck-400 hover:bg-duck-300 text-pond-950 text-sm font-extrabold transition-colors"
-              >
+              <Button size="sm" onClick={hire}>
                 Hire me
-              </a>
+              </Button>
             </li>
           </ul>
         </div>

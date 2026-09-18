@@ -17,7 +17,7 @@ const App: FC = () => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-pond-950 text-white antialiased font-sans">
+    <div className="min-h-screen bg-bg text-text antialiased font-sans">
       <Navbar />
       <main>
         <Hero />
