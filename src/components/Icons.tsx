@@ -1,4 +1,5 @@
 import type { FC } from 'react'
+import type { SocialIconName } from '../config/portfolio.config'
 
 interface IconProps {
   className?: string
@@ -17,7 +18,13 @@ export const LinkedinIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
 )
 
 export const ResumeIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -28,7 +35,13 @@ export const ResumeIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
 )
 
 export const MailIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -39,7 +52,13 @@ export const MailIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
 )
 
 export const ExternalIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -56,21 +75,32 @@ export const BoltIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
 )
 
 export const ChipIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
     <rect x="7" y="7" width="10" height="10" rx="2" strokeWidth={2} />
-    <path strokeWidth={2} strokeLinecap="round" d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" />
+    <path
+      strokeWidth={2}
+      strokeLinecap="round"
+      d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"
+    />
   </svg>
 )
 
-export const SocialIcon: FC<{ icon: string; className?: string }> = ({ icon, className }) => {
-  switch (icon) {
-    case 'github':
-      return <GithubIcon className={className} />
-    case 'linkedin':
-      return <LinkedinIcon className={className} />
-    case 'resume':
-      return <ResumeIcon className={className} />
-    default:
-      return null
-  }
+const SOCIAL_ICONS: Record<SocialIconName, FC<IconProps>> = {
+  github: GithubIcon,
+  linkedin: LinkedinIcon,
+  resume: ResumeIcon,
+}
+
+export const SocialIcon: FC<{ icon: SocialIconName; className?: string }> = ({
+  icon,
+  className,
+}) => {
+  const Icon = SOCIAL_ICONS[icon]
+  return <Icon className={className} />
 }

@@ -15,16 +15,18 @@
   --sk-accent-deep: #c9220f;
   --sk-accent-glow: rgba(255, 90, 31, 0.55);
   --sk-focus-ring: #ff8a3d;
-  --sk-on-accent: #fff7ed;
+  /* Dark text on the fire gradient: 10.8:1 / 7:1 / 6.2:1 against the three stops (WCAG AA). */
+  --sk-on-accent: #1a0a05;
   --sk-premium: #ffc861;
   --sk-premium-dim: #c99a3f;
   --sk-text: #fff4ec;
   --sk-text-dim: #b8a49a;
-  --sk-text-faint: #8a776e;
+  /* 5.4:1 on surface-2, 5.9:1 on bg. */
+  --sk-text-faint: #9a877d;
   --sk-success: #4ade80;
-  --sk-gradient-accent: linear-gradient(135deg, #ffb347 0%, #ff5a1f 45%, #c9220f 100%);
+  --sk-gradient-accent: linear-gradient(135deg, #ffb347 0%, #ff7a2a 55%, #ff5a1f 100%);
   --sk-shadow-card: 0 30px 60px -24px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 120, 40, 0.1);
-  --sk-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sk-font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --sk-font-display: 'Archivo', var(--sk-font-sans);
 }
 
@@ -36,7 +38,8 @@
   --color-plasma: #ff2d6f;
   --color-neon: #38bdf8;
   --color-void: #07050a;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono:
+    'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @layer base {
@@ -51,6 +54,24 @@
   ::selection {
     background: rgba(255, 90, 31, 0.45);
     color: #fff7ed;
+  }
+  /* Room for the fixed header when jumping to an anchor. */
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
+  a:focus-visible {
+    outline: 2px solid var(--sk-focus-ring);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  /* sukuna-ui's accent Badge hard-codes text-text; use the AA-safe on-accent color instead. */
+  .bg-gradient-accent.text-text {
+    color: var(--sk-on-accent);
+  }
+  /* Decorative canvases: isolate their paint from the rest of the section. */
+  canvas[aria-hidden] {
+    will-change: transform;
+    contain: strict;
   }
 }
 
@@ -72,13 +93,14 @@
   }
 }
 
-@keyframes pulse-glow {
+/* Glow lives on a pseudo-element and only its opacity animates (compositor-only). */
+@keyframes glow-fade {
   0%,
   100% {
-    box-shadow: 0 0 20px 2px var(--sk-accent-glow);
+    opacity: 0.35;
   }
   50% {
-    box-shadow: 0 0 44px 10px var(--sk-accent-glow);
+    opacity: 1;
   }
 }
 
@@ -101,12 +123,6 @@
   }
   50% {
     transform: translateY(-12px);
-  }
-}
-
-@keyframes spin-slow {
-  to {
-    transform: rotate(360deg);
   }
 }
 
@@ -157,28 +173,36 @@
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 2.4s ease-in-out infinite;
+  position: relative;
+}
+.animate-pulse-glow::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  box-shadow: 0 0 40px 10px var(--sk-accent-glow);
+  animation: glow-fade 2.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .animate-float-slow {
   animation: float-slow 6s ease-in-out infinite;
-}
-
-.animate-spin-slow {
-  animation: spin-slow 18s linear infinite;
+  will-change: transform;
 }
 
 .animate-blink {
   animation: blink 1s steps(2) infinite;
 }
 
+/* Gradient sweeps three times on load, then settles: the h1 is the LCP element. */
 .text-fire {
   background: linear-gradient(110deg, #ffd166, #ff8a3d, #ff3d1f, #ff2d6f, #ffb347);
   background-size: 300% 300%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: gradient-shift 6s ease infinite;
+  animation: gradient-shift 6s ease 3;
 }
 
 .text-glow {
@@ -188,9 +212,9 @@
 }
 
 .glass {
-  background: rgba(18, 11, 16, 0.55);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(18, 11, 16, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Card with an animated conic ring on hover */
@@ -241,20 +265,19 @@
   pointer-events: none;
 }
 
-/* Scanline overlay for the AI feel */
+/* Scanline overlay for the AI feel (plain low-alpha overlay, no blend mode) */
 .scanlines::after {
   content: '';
   position: absolute;
   inset: 0;
   background: repeating-linear-gradient(
     0deg,
-    rgba(255, 255, 255, 0.025) 0px,
-    rgba(255, 255, 255, 0.025) 1px,
+    rgba(255, 255, 255, 0.035) 0px,
+    rgba(255, 255, 255, 0.035) 1px,
     transparent 1px,
     transparent 3px
   );
   pointer-events: none;
-  mix-blend-mode: overlay;
 }
 
 .scan-beam {
@@ -265,6 +288,7 @@
   background: linear-gradient(to bottom, transparent, rgba(255, 138, 61, 0.08), transparent);
   animation: scan 7s linear infinite;
   pointer-events: none;
+  will-change: transform;
 }
 
 .grid-bg {
@@ -276,16 +300,59 @@
   -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
 }
 
+/* CSS-only tooltip: <a data-tip="Label" class="tip">. No runtime positioning library needed. */
+.tip {
+  position: relative;
+}
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  translate: -50% 0;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--sk-line);
+  background: var(--sk-surface-2);
+  color: var(--sk-text);
+  font-family: var(--sk-font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0;
+  scale: 0.95;
+  transition:
+    opacity 0.15s ease,
+    scale 0.15s ease;
+  pointer-events: none;
+}
+.tip:hover::after,
+.tip:focus-visible::after {
+  opacity: 1;
+  scale: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .animate-flicker,
-  .animate-pulse-glow,
+  .animate-pulse-glow::after,
   .animate-float-slow,
-  .animate-spin-slow,
   .animate-blink,
+  .animate-ping,
+  .animate-bounce,
+  .animate-pulse,
   .text-fire,
   .heat,
   .scan-beam,
   .fire-card:hover::before {
     animation: none;
+  }
+  .animate-pulse-glow::after {
+    opacity: 0.6;
+  }
+  .tip::after {
+    transition: none;
   }
 }

@@ -1,73 +1,67 @@
-# React + TypeScript + Vite
+# arielplascencia.com
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Personal portfolio of Ariel Plascencia, full-stack developer. Live at
+[arielplascencia.com](https://arielplascencia.com/).
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19, TypeScript, Vite 5
+- Tailwind CSS v4 through `@tailwindcss/vite`
+- [`sukuna-ui`](https://www.npmjs.com/package/sukuna-ui) component library, themed by
+  overriding its `--sk-*` tokens in `src/index.css` (fire / power / AI palette)
+- Canvas effects: `FireParticles` (ember particles) and `NeuralNet` (node mesh)
+- Vercel for hosting, analytics and the `api/contact` serverless function
 
-## React Compiler
+## Develop
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Bun only.
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+bun install
+bun run dev          # http://localhost:5173 (or --port 5199 in .claude/launch.json)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Checks, which CI also runs on every push and PR:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+bun run lint
+bun run typecheck
+bun run test
+bun run build
 ```
+
+`bun run format` runs Prettier.
+
+## Editing content
+
+Everything visible lives in `src/config/portfolio.config.ts` and is typed: name, availability,
+about copy, socials, skill groups, projects, experience and every section's eyebrow, title and
+subtitle. To add a project, append to `projects`. Optional `role`, `stack`, `year`, `outcome`
+and `image` fields turn a card into a mini case study; put images in `public/projects/`
+(800×500).
+
+Stats in the About section are derived from that data (years since the earliest experience
+entry, number of projects, number of companies), so they never go stale.
+
+## Contact form
+
+`src/components/Contact.tsx` posts to `api/contact.ts`, which sends through
+[Resend](https://resend.com). Set these environment variables on Vercel:
+
+| Variable         | Example                                                     |
+| ---------------- | ----------------------------------------------------------- |
+| `RESEND_API_KEY` | `re_…`                                                      |
+| `CONTACT_TO`     | `imariel2d@gmail.com`                                       |
+| `CONTACT_FROM`   | `Portfolio <hello@arielplascencia.com>` (a verified sender) |
+
+If they are missing the endpoint returns 503 and the form falls back to opening the visitor's
+mail client with the message pre-filled.
+
+## SEO assets
+
+`index.html` carries Open Graph, Twitter card, canonical and JSON-LD `Person` metadata.
+`public/og.png` (1200×630), `public/robots.txt` and `public/sitemap.xml` are static.
+
+## Improvement backlog
+
+See [`docs/ai-improvements.md`](docs/ai-improvements.md).

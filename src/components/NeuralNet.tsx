@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { FC } from 'react'
+import { prefersReducedMotion } from '../hooks/useReducedMotion'
 
 interface Node {
   x: number
@@ -16,16 +17,43 @@ interface NeuralNetProps {
   density?: number
   /** Max link distance in px. */
   linkDistance?: number
+  /** Hard cap on node count; the link loop is O(n²). */
+  maxNodes?: number
+}
+
+const ALPHA_BUCKETS = 6
+const NODE_SPRITE = 24
+
+const makeNodeSprite = () => {
+  const c = document.createElement('canvas')
+  c.width = c.height = NODE_SPRITE
+  const g = c.getContext('2d')!
+  const grad = g.createRadialGradient(
+    NODE_SPRITE / 2,
+    NODE_SPRITE / 2,
+    0,
+    NODE_SPRITE / 2,
+    NODE_SPRITE / 2,
+    NODE_SPRITE / 2
+  )
+  grad.addColorStop(0, 'rgba(255, 200, 140, 1)')
+  grad.addColorStop(0.3, 'rgba(255, 138, 61, 0.9)')
+  grad.addColorStop(1, 'rgba(255, 90, 31, 0)')
+  g.fillStyle = grad
+  g.fillRect(0, 0, NODE_SPRITE, NODE_SPRITE)
+  return c
 }
 
 /**
  * Drifting nodes connected by glowing links, with signal pulses travelling along edges. Reads as
- * a neural network / constellation. Pointer proximity brightens nearby links.
+ * a neural network / constellation. Pointer proximity brightens nearby links. Runs only while on
+ * screen; links are batched into a handful of stroke calls instead of one per pair.
  */
 export const NeuralNet: FC<NeuralNetProps> = ({
   className = '',
   density = 0.12,
   linkDistance = 150,
+  maxNodes = 90,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -35,22 +63,30 @@ export const NeuralNet: FC<NeuralNetProps> = ({
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduceMotion = prefersReducedMotion()
+    const sprite = makeNodeSprite()
+    const linkD2 = linkDistance * linkDistance
     let width = 0
     let height = 0
     let nodes: Node[] = []
     let raf = 0
     let tick = 0
+    let visible = false
+    let resizeTimer = 0
     const pointer = { x: -9999, y: -9999 }
+    const buckets: Path2D[] = []
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       width = canvas.clientWidth
       height = canvas.clientHeight
       canvas.width = width * dpr
       canvas.height = height * dpr
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      const count = Math.max(18, Math.floor(((width * height) / 10000) * density))
+      const count = Math.min(
+        maxNodes,
+        Math.max(18, Math.floor(((width * height) / 10000) * density))
+      )
       nodes = Array.from({ length: count }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -61,7 +97,7 @@ export const NeuralNet: FC<NeuralNetProps> = ({
       }))
     }
 
-    const step = () => {
+    const draw = () => {
       tick++
       ctx.clearRect(0, 0, width, height)
 
@@ -72,58 +108,76 @@ export const NeuralNet: FC<NeuralNetProps> = ({
         if (n.y < 0 || n.y > height) n.vy *= -1
       }
 
-      // links
+      // Links, batched by quantized alpha so we stroke ~7 paths instead of hundreds.
+      for (let b = 0; b < ALPHA_BUCKETS; b++) buckets[b] = new Path2D()
+      const near = new Path2D()
+      const pulses: [number, number, number][] = []
+
       for (let i = 0; i < nodes.length; i++) {
         const a = nodes[i]
         for (let j = i + 1; j < nodes.length; j++) {
           const b = nodes[j]
           const dx = a.x - b.x
           const dy = a.y - b.y
-          const d = Math.hypot(dx, dy)
-          if (d > linkDistance) continue
-          const strength = 1 - d / linkDistance
+          const d2 = dx * dx + dy * dy
+          if (d2 > linkD2) continue
+          const strength = 1 - Math.sqrt(d2) / linkDistance
           const mx = (a.x + b.x) / 2
           const my = (a.y + b.y) / 2
-          const pd = Math.hypot(pointer.x - mx, pointer.y - my)
-          const near = pd < 180 ? 1 - pd / 180 : 0
-          const alpha = 0.08 + strength * 0.22 + near * 0.5
+          const pdx = pointer.x - mx
+          const pdy = pointer.y - my
+          const nearPointer = pdx * pdx + pdy * pdy < 180 * 180
 
-          ctx.strokeStyle = near > 0.05
-            ? `rgba(255, 138, 61, ${alpha})`
-            : `rgba(255, 90, 31, ${alpha})`
-          ctx.lineWidth = 0.6 + near
-          ctx.beginPath()
-          ctx.moveTo(a.x, a.y)
-          ctx.lineTo(b.x, b.y)
-          ctx.stroke()
+          const path = nearPointer
+            ? near
+            : buckets[Math.min(ALPHA_BUCKETS - 1, Math.floor(strength * ALPHA_BUCKETS))]
+          path.moveTo(a.x, a.y)
+          path.lineTo(b.x, b.y)
 
-          // travelling pulse along some edges
           if ((i + j) % 5 === 0) {
-            const p = ((tick * 0.008 + (i * 13 + j * 7) * 0.05) % 1 + 1) % 1
-            const px = a.x + (b.x - a.x) * p
-            const py = a.y + (b.y - a.y) * p
-            ctx.beginPath()
-            ctx.fillStyle = `rgba(255, 210, 120, ${0.35 + strength * 0.5})`
-            ctx.arc(px, py, 1.4, 0, Math.PI * 2)
-            ctx.fill()
+            const p = (((tick * 0.008 + (i * 13 + j * 7) * 0.05) % 1) + 1) % 1
+            pulses.push([a.x + (b.x - a.x) * p, a.y + (b.y - a.y) * p, 0.35 + strength * 0.5])
           }
         }
       }
 
-      // nodes
+      ctx.lineWidth = 0.7
+      for (let b = 0; b < ALPHA_BUCKETS; b++) {
+        const alpha = 0.08 + ((b + 0.5) / ALPHA_BUCKETS) * 0.22
+        ctx.strokeStyle = `rgba(255, 90, 31, ${alpha.toFixed(3)})`
+        ctx.stroke(buckets[b])
+      }
+      ctx.lineWidth = 1.4
+      ctx.strokeStyle = 'rgba(255, 138, 61, 0.6)'
+      ctx.stroke(near)
+
+      for (const [px, py, alpha] of pulses) {
+        ctx.globalAlpha = alpha
+        ctx.fillStyle = 'rgb(255, 210, 120)'
+        ctx.fillRect(px - 1.2, py - 1.2, 2.4, 2.4)
+      }
+
       for (const n of nodes) {
         n.pulse += 0.03
         const glow = 0.6 + Math.sin(n.pulse) * 0.4
-        ctx.beginPath()
-        ctx.fillStyle = `rgba(255, 138, 61, ${0.45 + glow * 0.45})`
-        ctx.shadowBlur = 10 * glow
-        ctx.shadowColor = 'rgba(255, 90, 31, 0.9)'
-        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2)
-        ctx.fill()
+        const s = n.r * 6 * glow
+        ctx.globalAlpha = 0.5 + glow * 0.5
+        ctx.drawImage(sprite, n.x - s / 2, n.y - s / 2, s, s)
       }
-      ctx.shadowBlur = 0
+      ctx.globalAlpha = 1
+    }
 
-      raf = requestAnimationFrame(step)
+    const loop = () => {
+      draw()
+      raf = requestAnimationFrame(loop)
+    }
+    const start = () => {
+      if (reduceMotion || raf || !visible || document.hidden) return
+      raf = requestAnimationFrame(loop)
+    }
+    const stop = () => {
+      cancelAnimationFrame(raf)
+      raf = 0
     }
 
     const onMove = (ev: PointerEvent) => {
@@ -131,24 +185,34 @@ export const NeuralNet: FC<NeuralNetProps> = ({
       pointer.x = ev.clientX - rect.left
       pointer.y = ev.clientY - rect.top
     }
+    const onResize = () => {
+      window.clearTimeout(resizeTimer)
+      resizeTimer = window.setTimeout(resize, 150)
+    }
+    const onVisibility = () => (document.hidden ? stop() : start())
+
+    const io = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting
+      if (visible) start()
+      else stop()
+    })
 
     resize()
-    window.addEventListener('resize', resize)
-    window.addEventListener('pointermove', onMove)
-
-    if (reduceMotion) {
-      step()
-      cancelAnimationFrame(raf)
-    } else {
-      raf = requestAnimationFrame(step)
-    }
+    if (reduceMotion) draw()
+    io.observe(canvas)
+    window.addEventListener('resize', onResize)
+    document.addEventListener('visibilitychange', onVisibility)
+    if (!reduceMotion) window.addEventListener('pointermove', onMove, { passive: true })
 
     return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('resize', resize)
+      stop()
+      io.disconnect()
+      window.clearTimeout(resizeTimer)
+      window.removeEventListener('resize', onResize)
+      document.removeEventListener('visibilitychange', onVisibility)
       window.removeEventListener('pointermove', onMove)
     }
-  }, [density, linkDistance])
+  }, [density, linkDistance, maxNodes])
 
   return (
     <canvas

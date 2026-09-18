@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
 import type { FC, ReactNode } from 'react'
+import { useInView } from '../hooks/useInView'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 interface RevealProps {
   children: ReactNode
@@ -7,32 +8,18 @@ interface RevealProps {
   className?: string
 }
 
-/** Fades and slides content up when it scrolls into view. */
+/** Fades and slides content up when it scrolls into view. Static when motion is reduced. */
 export const Reveal: FC<RevealProps> = ({ children, delay = 0, className = '' }) => {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.15 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+  const [ref, inView] = useInView<HTMLDivElement>()
+  const reduce = useReducedMotion()
+  const visible = inView || reduce
 
   return (
     <div
       ref={ref}
+      data-testid="reveal"
       style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-700 ease-out ${
+      className={`${reduce ? '' : 'transition-all duration-700 ease-out'} ${
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       } ${className}`}
     >

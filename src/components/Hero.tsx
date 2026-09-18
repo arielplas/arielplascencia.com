@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { FC } from 'react'
-import { Badge, Button, Text, Tooltip } from 'sukuna-ui'
+import { Badge, Text } from 'sukuna-ui'
 import config from '../config/portfolio.config'
+import { useReducedMotion } from '../hooks/useReducedMotion'
+import { trackCta } from '../lib/analytics'
 import { FireParticles } from './FireParticles'
 import { BoltIcon, MailIcon, ResumeIcon, SocialIcon } from './Icons'
+import { LinkButton } from './LinkButton'
 
-const WORDS = ['fast', 'powerful', 'AI-assisted', 'accessible', 'beautiful']
-
-/** Cycles through WORDS with a typewriter effect. */
-const useTypewriter = (words: string[]) => {
+/** Cycles through `words` with a typewriter effect. Shows the first word when `enabled` is false. */
+const useTypewriter = (words: string[], enabled: boolean) => {
   const [index, setIndex] = useState(0)
-  const [text, setText] = useState('')
+  const [text, setText] = useState(enabled ? '' : words[0])
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
+    if (!enabled) return
     const word = words[index]
     const done = !deleting && text === word
     const cleared = deleting && text === ''
@@ -30,14 +32,15 @@ const useTypewriter = (words: string[]) => {
       }
     }, delay)
     return () => clearTimeout(t)
-  }, [text, deleting, index, words])
+  }, [text, deleting, index, words, enabled])
 
-  return text
+  return enabled ? text : words[0]
 }
 
 export const Hero: FC = () => {
-  const resumeLink = config.socials.find((social) => social.label.toLowerCase() === 'resume')
-  const word = useTypewriter(WORDS)
+  const resumeLink = config.socials.find((social) => social.icon === 'resume')
+  const reduce = useReducedMotion()
+  const word = useTypewriter(config.heroWords, !reduce)
 
   const heatBars = useMemo(
     () =>
@@ -48,10 +51,6 @@ export const Hero: FC = () => {
       })),
     []
   )
-
-  const go = (href: string) => {
-    document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   return (
     <section
@@ -84,7 +83,7 @@ export const Hero: FC = () => {
       <div className="relative z-10 max-w-4xl mx-auto px-6 pt-32 pb-28 text-center">
         <div className="mb-8 inline-flex">
           <Badge tone="premium" size="md" dot className="animate-pulse-glow border-premium/30">
-            Available for work
+            {config.availability}
           </Badge>
         </div>
 
@@ -96,8 +95,7 @@ export const Hero: FC = () => {
           tracking="tight"
           className="text-5xl md:text-7xl lg:text-8xl mb-6"
         >
-          Hi, I'm{' '}
-          <span className="text-fire text-glow">{config.name}</span>
+          Hi, I'm <span className="text-fire text-glow">{config.name}</span>
         </Text>
 
         <Text
@@ -112,54 +110,74 @@ export const Hero: FC = () => {
 
         <Text as="p" tone="dim" className="text-lg md:text-xl max-w-2xl mx-auto mb-10 font-mono">
           I forge <span className="text-text font-semibold">{word}</span>
-          <span className="animate-blink text-accent">|</span> web experiences.
+          {!reduce && (
+            <span className="animate-blink text-accent" aria-hidden="true">
+              |
+            </span>
+          )}{' '}
+          web experiences.
         </Text>
 
         <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
-          <Button size="lg" onClick={() => go('#projects')} className="animate-pulse-glow">
-            View my work
-          </Button>
-          {resumeLink && (
-            <Button
-              size="lg"
-              variant="secondary"
-              leadingIcon={<ResumeIcon className="w-4 h-4" />}
-              onClick={() => window.open(resumeLink.url, '_blank', 'noopener,noreferrer')}
-            >
-              View Resume
-            </Button>
-          )}
-          <Button
+          <LinkButton
+            href="#projects"
             size="lg"
-            variant="ghost"
-            leadingIcon={<MailIcon className="w-4 h-4" />}
-            onClick={() => {
-              window.location.href = `mailto:${config.email}`
-            }}
+            className="animate-pulse-glow"
+            onClick={() => trackCta('hero_work')}
           >
-            Get in touch
-          </Button>
+            See my work
+          </LinkButton>
+          <LinkButton
+            href="#contact"
+            size="lg"
+            variant="secondary"
+            leadingIcon={<MailIcon className="w-4 h-4" />}
+            onClick={() => trackCta('hero_contact')}
+          >
+            Contact me
+          </LinkButton>
+          {resumeLink && (
+            <LinkButton
+              href={resumeLink.url}
+              target="_blank"
+              size="lg"
+              variant="ghost"
+              leadingIcon={<ResumeIcon className="w-4 h-4" />}
+              onClick={() => trackCta('hero_resume')}
+            >
+              Resume
+            </LinkButton>
+          )}
         </div>
 
-        <div className="flex items-center justify-center gap-6">
+        <div className="flex items-center justify-center gap-4">
           {config.socials.map((social) => (
-            <Tooltip key={social.label} content={social.label}>
-              <a
-                href={social.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={social.label}
-                className="text-text-dim hover:text-blaze transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(255,138,61,0.8)]"
-              >
-                <SocialIcon icon={social.icon} className="w-6 h-6" />
-              </a>
-            </Tooltip>
+            <a
+              key={social.label}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${social.label} (opens in a new tab)`}
+              data-tip={social.label}
+              onClick={() => trackCta('social', { network: social.label })}
+              className="tip p-3 rounded-md text-text-dim hover:text-blaze transition-all hover:scale-125 hover:drop-shadow-[0_0_10px_rgba(255,138,61,0.8)]"
+            >
+              <SocialIcon icon={social.icon} className="w-6 h-6" />
+            </a>
           ))}
         </div>
       </div>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce z-10">
-        <svg className="w-6 h-6 text-accent/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce z-10"
+        aria-hidden="true"
+      >
+        <svg
+          className="w-6 h-6 text-accent/70"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </div>
