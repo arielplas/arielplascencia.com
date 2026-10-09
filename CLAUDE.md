@@ -23,4 +23,10 @@ and `@sukunagg/fx` (the owner's own component and effects libraries). Deploys to
   `useReducedMotion`).
 - Navigation uses real anchors (`<Button as="a" href>`), never
   `<button onClick={location.href = …}>`.
+- `bun run build` prerenders the page into `dist/index.html` (`scripts/prerender.ts`) and the
+  client hydrates it. Render output must not depend on the browser: read `window`, media
+  queries or `IntersectionObserver` in effects or through `useSyncExternalStore` with a server
+  snapshot (see `useReducedMotion`, `useInView`), never in render or a `useState` initializer.
+- Tailwind scans only the `@sukunagg/*` component folders listed in `src/index.css`. When you
+  import a new component, add its folder; `src/sukunagg-sources.test.ts` fails until you do.
 - Prettier settings are in `.prettierrc`; keep the no-semicolon, single-quote style.

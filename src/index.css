@@ -1,8 +1,11 @@
 @import 'tailwindcss';
 @import '@sukunagg/ui/theme.css';
 @import '@sukunagg/fx/theme.css';
-@source '../node_modules/@sukunagg/ui/dist';
-@source '../node_modules/@sukunagg/fx/dist';
+/* Scan only the components the site renders: scanning all of dist emits every component's
+   utilities, a third of the render-blocking CSS. Add a component's folder when you import it
+   (sukunagg-sources.test.ts fails until you do). */
+@source '../node_modules/@sukunagg/ui/dist/{utils,components/{avatar,avatar-frame,badge,border-beam,button,card,chip,drawer,glitch-text,icon,loot-reveal,retro-grid,scramble-text,spinner,tabs,text,toggle-group,xp-level-up}}/*.js';
+@source '../node_modules/@sukunagg/fx/dist/{utils,internal,components/{flow-field,holo-card}}/*.js';
 
 /* --- Player One: the library's crimson palette as-is; only the type families change --- */
 :root,

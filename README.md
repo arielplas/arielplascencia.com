@@ -30,6 +30,10 @@ bun run test
 bun run build
 ```
 
+`bun run build` also prerenders the page into `dist/index.html` (`scripts/prerender.ts`), so the
+first paint needs only HTML and CSS; the client then hydrates it. `bun run preview` serves the
+result.
+
 `bun run format` runs Prettier.
 
 ## Editing content
