@@ -18,7 +18,8 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     css: false,
     include: ['src/**/*.test.{ts,tsx}'],
-    // sukuna-ui's entry uses directory imports; let Vite transform it instead of Node's resolver.
-    server: { deps: { inline: ['sukuna-ui'] } },
+    // Let Vite transform the component libraries instead of Node's resolver.
+    // @sukunagg/video (re-exported by ui) uses directory imports Node cannot resolve.
+    server: { deps: { inline: ['@sukunagg/ui', '@sukunagg/fx', '@sukunagg/video'] } },
   },
 })

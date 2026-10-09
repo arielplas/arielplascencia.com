@@ -3,54 +3,43 @@ import { describe, expect, it } from 'vitest'
 import config from '../config/portfolio.config'
 import { Projects } from './Projects'
 
-const byCategory = (category: string) =>
-  config.projects.filter((p) => (p.category ?? 'My Projects') === category)
+const featured = config.projects.find((p) => p.featured)!
+const rest = config.projects.filter((p) => !p.featured)
+const categoryOf = (p: (typeof config.projects)[number]) => p.category ?? 'My Projects'
+const categories = [...new Set(rest.map(categoryOf))]
+
+const gridTitles = () =>
+  within(screen.getByRole('list', { name: 'Projects' }))
+    .getAllByRole('heading')
+    .map((h) => h.textContent)
 
 describe('Projects', () => {
-  it('renders one tab per category with the project count', () => {
+  it('shows the featured project on its own, outside the grid', () => {
     render(<Projects />)
-    const tabs = screen.getAllByRole('tab')
-    const categories = [...new Set(config.projects.map((p) => p.category ?? 'My Projects'))]
-    expect(tabs).toHaveLength(categories.length)
+    expect(screen.getByRole('article', { name: featured.title })).toBeInTheDocument()
+    expect(gridTitles()).not.toContain(featured.title)
+  })
+
+  it('renders an "All" filter plus one per category, each with its count', () => {
+    render(<Projects />)
+    const group = screen.getByRole('group', { name: 'More missions' })
+    const buttons = within(group).getAllByRole('button')
+    expect(buttons).toHaveLength(categories.length + 1)
+    expect(buttons[0]).toHaveTextContent(`All · ${rest.length}`)
     for (const category of categories) {
-      const tab = screen.getByRole('tab', { name: new RegExp(category) })
-      expect(tab).toHaveTextContent(String(byCategory(category).length))
+      const count = rest.filter((p) => categoryOf(p) === category).length
+      expect(within(group).getByRole('button', { name: `${category} · ${count}` })).toBeVisible()
     }
   })
 
-  it('shows the first category by default and switches on click', () => {
+  it('shows every other project by default and filters by category on click', () => {
     render(<Projects />)
-    const [first, second] = screen.getAllByRole('tab')
-    expect(first).toHaveAttribute('aria-selected', 'true')
+    expect(gridTitles()).toEqual(rest.map((p) => p.title))
 
-    const panel = screen.getByRole('tabpanel')
-    const firstTitles = byCategory(first.textContent!.replace(/\d+$/, '').trim()).map(
-      (p) => p.title
-    )
-    for (const title of firstTitles) {
-      expect(within(panel).getByRole('heading', { name: title })).toBeInTheDocument()
-    }
-
-    fireEvent.click(second)
-    expect(second).toHaveAttribute('aria-selected', 'true')
-    expect(first).toHaveAttribute('aria-selected', 'false')
-    const secondTitles = byCategory(second.textContent!.replace(/\d+$/, '').trim()).map(
-      (p) => p.title
-    )
-    const newPanel = screen.getByRole('tabpanel')
-    for (const title of secondTitles) {
-      expect(within(newPanel).getByRole('heading', { name: title })).toBeInTheDocument()
-    }
-    expect(newPanel).toHaveAttribute('aria-labelledby', second.id)
-  })
-
-  it('moves between tabs with the arrow keys', () => {
-    render(<Projects />)
-    const tablist = screen.getByRole('tablist')
-    const [first, second] = screen.getAllByRole('tab')
-    fireEvent.keyDown(tablist, { key: 'ArrowRight' })
-    expect(second).toHaveAttribute('aria-selected', 'true')
-    fireEvent.keyDown(tablist, { key: 'ArrowLeft' })
-    expect(first).toHaveAttribute('aria-selected', 'true')
+    const [category] = categories
+    const button = screen.getByRole('button', { name: new RegExp(`^${category}`) })
+    fireEvent.click(button)
+    expect(button).toHaveAttribute('aria-pressed', 'true')
+    expect(gridTitles()).toEqual(rest.filter((p) => categoryOf(p) === category).map((p) => p.title))
   })
 })

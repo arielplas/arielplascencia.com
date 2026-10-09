@@ -1,24 +1,14 @@
 import type { FC } from 'react'
-import { Divider, Text } from 'sukuna-ui'
 import config from '../config/portfolio.config'
-import { Flame } from './Flame'
 
 export const Footer: FC = () => {
   return (
-    <footer className="relative">
-      <Divider decorative className="border-line" />
-      <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
-        <Text as="p" size="sm" tone="faint" className="inline-flex items-center gap-2">
-          <Flame className="w-4" />© {new Date().getFullYear()} {config.name}. All rights reserved.
-        </Text>
-        <Text as="p" size="sm" tone="faint" className="font-mono">
-          Built with <span className="text-blaze">React</span>
-          {' + '}
-          <span className="text-blaze">TypeScript</span>
-          {' + '}
-          <span className="text-blaze">sukuna-ui</span>
-          {' — forged in fire, powered by AI'}
-        </Text>
+    <footer className="border-t border-line">
+      <div className="hud mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-7 text-text-faint sm:flex-row sm:px-6">
+        <p className="m-0">
+          <b className="text-accent">GG</b> · © {new Date().getFullYear()} {config.name}
+        </p>
+        <p className="m-0">Built with @sukunagg/ui + @sukunagg/fx</p>
       </div>
     </footer>
   )

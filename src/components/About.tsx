@@ -1,111 +1,70 @@
-import { useEffect, useState } from 'react'
 import type { FC } from 'react'
-import { Card, Text } from 'sukuna-ui'
-import config, { yearsOfExperience } from '../config/portfolio.config'
+import { Card, Text, XpLevelUp } from '@sukunagg/ui'
+import config, { levelProgress, yearsOfExperience } from '../config/portfolio.config'
 import { useInView } from '../hooks/useInView'
-import { useReducedMotion } from '../hooks/useReducedMotion'
-import { trackCta } from '../lib/analytics'
-import { MailIcon } from './Icons'
+import { PlayerCard } from './PlayerCard'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 
-interface Stat {
-  value: number | string
-  suffix?: string
-  label: string
-}
-
-// Every number here is derived from config so it cannot drift from the real history.
-const STATS: Stat[] = [
-  { value: yearsOfExperience(config.experience), suffix: '+', label: 'Years of experience' },
-  { value: config.projects.length, label: 'Products shipped' },
-  { value: config.experience.length, label: 'Companies' },
-  { value: config.location, label: 'Based in' },
-]
-
-/** Counts from 0 to `target` the first time the element scrolls into view. */
-const CountUp: FC<{ target: number; suffix?: string }> = ({ target, suffix = '' }) => {
-  const [ref, inView] = useInView<HTMLSpanElement>(0.4)
-  const reduce = useReducedMotion()
-  const [value, setValue] = useState(0)
-
-  useEffect(() => {
-    if (!inView || reduce) return
-    const start = performance.now()
-    const duration = 1400
-    let raf = 0
-    const tick = (now: number) => {
-      const t = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - t, 3)
-      setValue(Math.round(target * eased))
-      if (t < 1) raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [inView, reduce, target])
-
-  // Reduced motion: no count-up, show the final number as soon as it is on screen.
-  const shown = reduce && inView ? target : value
-  return (
-    <span ref={ref}>
-      {shown}
-      {suffix}
-    </span>
-  )
-}
+const level = yearsOfExperience(config.experience)
+const progress = levelProgress(config.experience)
+const current = config.experience[0]
+const careerStart = config.experience.at(-1)?.period.split(' - ')[0]
 
 export const About: FC = () => {
+  // XpLevelUp plays once on mount and does not wait for visibility, so hold it at rest until the
+  // card scrolls into view, then remount it to play the level-up.
+  const [ref, inView] = useInView<HTMLDivElement>(0.4)
+
   return (
-    <section id="about" className="relative py-28 overflow-clip">
-      <div
-        className="absolute -left-40 top-20 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(255,90,31,0.16),transparent_65%)] blur-2xl"
-        aria-hidden="true"
-      />
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+    <section
+      id="about"
+      aria-labelledby="about-title"
+      className="relative overflow-clip py-24 sm:py-32"
+    >
+      <div className="mx-auto flex max-w-6xl flex-wrap items-start gap-14 px-4 sm:px-6">
+        <div className="min-w-0 flex-[1_1_560px]">
           <Reveal>
-            <SectionHeading align="start" copy={config.sections.about} className="mb-6" />
-            <Text as="p" tone="dim" size="lg" leading="normal" className="mb-8">
+            <SectionHeading copy={config.sections.about} index={1} id="about-title" />
+            <Text as="p" className="mt-7 max-w-2xl text-lg leading-relaxed text-text/80">
               {config.about}
             </Text>
-            <a
-              href={`mailto:${config.email}`}
-              onClick={() => trackCta('about_email')}
-              className="inline-flex items-center gap-2 py-2 text-blaze hover:text-text font-semibold transition-colors"
-            >
-              <MailIcon className="w-4 h-4" />
-              {config.email}
-            </a>
           </Reveal>
 
-          <Reveal delay={150}>
-            <div className="grid grid-cols-2 gap-4">
-              {STATS.map((stat) => (
-                <Card
-                  key={stat.label}
-                  elevation="raised"
-                  padding="lg"
-                  className="fire-card text-center hover:-translate-y-1 transition-transform duration-300"
-                >
-                  <Text
-                    as="p"
-                    font="display"
-                    weight="black"
-                    className="text-4xl text-fire mb-1 tabular-nums"
-                  >
-                    {typeof stat.value === 'number' ? (
-                      <CountUp target={stat.value} suffix={stat.suffix} />
-                    ) : (
-                      stat.value
-                    )}
-                  </Text>
-                  <Text as="p" size="sm" tone="dim" weight="semibold">
-                    {stat.label}
-                  </Text>
-                </Card>
-              ))}
-            </div>
-          </Reveal>
+          <div ref={ref} className="mt-10">
+            <Card elevation="raised" padding="lg" className="overflow-hidden">
+              <XpLevelUp
+                key={inView ? 'play' : 'rest'}
+                levelUp={inView}
+                title={`Career pass · Season ${new Date().getFullYear()}`}
+                prelude="Career pass"
+                headline="Level up"
+                level={level}
+                from={inView ? 72 : progress}
+                progress={progress}
+                gain={
+                  <>
+                    <b>+1 LV</b> · {level} years shipping
+                  </>
+                }
+                // A node, not a string: a string would become the bar's aria-valuetext.
+                xp={<>Since {careerStart}</>}
+              >
+                <div className="mt-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t border-line pt-5">
+                  <span className="hud text-[11px] text-text-faint">Current team</span>
+                  <span className="font-bold">
+                    {current.company}{' '}
+                    <span className="font-normal text-text-dim">· {current.role}</span>
+                  </span>
+                </div>
+              </XpLevelUp>
+            </Card>
+          </div>
+        </div>
+
+        <div className="mx-auto flex min-w-[260px] flex-[0_1_340px] flex-col items-center gap-7 pt-10">
+          <PlayerCard level={level} />
+          <p className="hud m-0 text-[10px] text-text-faint">Tilt with pointer or arrow keys</p>
         </div>
       </div>
     </section>

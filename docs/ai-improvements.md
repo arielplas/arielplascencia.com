@@ -161,7 +161,7 @@ The accent Badge hard-codes `text-text` in the library, so add
 
 ## 6. Fix three sukuna-ui gaps upstream and delete the workarounds
 
-**Status.** Interim done here: `LinkButton` replaces every navigating Button, the tab strip has full WAI-ARIA semantics (roving tabindex, arrow keys, `aria-controls`, `tabpanel`), card titles are `h3`, and `Progress`/`Tooltip` are no longer used at all. **Needs you:** the three library changes in the sukuna-ui repo (export Tabs, Button `render` prop, Progress `tone`).
+**Status.** Done. `@sukunagg/ui` 0.11 exports `Tabs`, gives `Button` an `as="a"` mode and adds `Progress` `tone`. The site moved to it in the gamer redesign and the workarounds (`LinkButton`, the hand-rolled tab strip) are deleted.
 
 **Why.** You own the library, so each hack in this repo is one small upstream change away
 from disappearing. Each hack also couples the site to internals that can change on any `0.x`

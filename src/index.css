@@ -1,45 +1,43 @@
 @import 'tailwindcss';
-@import 'sukuna-ui/theme.css';
-@source '../node_modules/sukuna-ui/dist';
+@import '@sukunagg/ui/theme.css';
+@import '@sukunagg/fx/theme.css';
+@source '../node_modules/@sukunagg/ui/dist';
+@source '../node_modules/@sukunagg/fx/dist';
 
-/* --- Fire & Power & AI: override sukuna-ui tokens --- */
+/* --- Player One: the library's crimson palette as-is; only the type families change --- */
 :root,
 [data-theme='dark'] {
-  --sk-bg: #07050a;
-  --sk-surface: #120b10;
-  --sk-surface-2: #1c1016;
-  --sk-well: #030204;
-  --sk-line: rgba(255, 140, 60, 0.14);
-  --sk-line-soft: rgba(255, 140, 60, 0.07);
-  --sk-accent: #ff5a1f;
-  --sk-accent-deep: #c9220f;
-  --sk-accent-glow: rgba(255, 90, 31, 0.55);
-  --sk-focus-ring: #ff8a3d;
-  /* Dark text on the fire gradient: 10.8:1 / 7:1 / 6.2:1 against the three stops (WCAG AA). */
-  --sk-on-accent: #1a0a05;
-  --sk-premium: #ffc861;
-  --sk-premium-dim: #c99a3f;
-  --sk-text: #fff4ec;
-  --sk-text-dim: #b8a49a;
-  /* 5.4:1 on surface-2, 5.9:1 on bg. */
-  --sk-text-faint: #9a877d;
-  --sk-success: #4ade80;
-  --sk-gradient-accent: linear-gradient(135deg, #ffb347 0%, #ff7a2a 55%, #ff5a1f 100%);
-  --sk-shadow-card: 0 30px 60px -24px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 120, 40, 0.1);
-  --sk-font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --sk-font-display: 'Archivo', var(--sk-font-sans);
+  --sk-font-sans: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sk-font-display: 'Archivo Variable', 'Archivo', var(--sk-font-sans);
 }
 
 @theme {
-  --color-ember: #ff8a3d;
-  --color-flame: #ff5a1f;
-  --color-blaze: #ffb347;
-  --color-magma: #c9220f;
-  --color-plasma: #ff2d6f;
-  --color-neon: #38bdf8;
-  --color-void: #07050a;
   --font-mono:
     'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* HUD label: small mono caps for eyebrows, nav and stats. */
+@utility hud {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Display caps: Archivo black italic, fully expanded (needs the wdth axis from main.tsx). */
+@utility display-caps {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-style: italic;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+/* Hexagon badge shape used by the logo, the player card emblem and skill icons. */
+@utility hex {
+  clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%);
 }
 
 @layer base {
@@ -52,97 +50,17 @@
     font-family: var(--sk-font-sans);
   }
   ::selection {
-    background: rgba(255, 90, 31, 0.45);
-    color: #fff7ed;
+    background: var(--sk-accent-glow);
+    color: var(--sk-text);
   }
-  /* Room for the fixed header when jumping to an anchor. */
+  /* Room for the sticky header when jumping to an anchor. */
   section[id] {
-    scroll-margin-top: 5rem;
+    scroll-margin-top: 4.5rem;
   }
   a:focus-visible {
     outline: 2px solid var(--sk-focus-ring);
     outline-offset: 3px;
     border-radius: 4px;
-  }
-  /* sukuna-ui's accent Badge hard-codes text-text; use the AA-safe on-accent color instead. */
-  .bg-gradient-accent.text-text {
-    color: var(--sk-on-accent);
-  }
-  /* Decorative canvases: isolate their paint from the rest of the section. */
-  canvas[aria-hidden] {
-    will-change: transform;
-    contain: strict;
-  }
-}
-
-/* --- Animations --- */
-
-@keyframes flicker {
-  0%,
-  100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
-  40% {
-    opacity: 0.9;
-    filter: brightness(1.25);
-  }
-  60% {
-    opacity: 0.95;
-    filter: brightness(0.9);
-  }
-}
-
-/* Glow lives on a pseudo-element and only its opacity animates (compositor-only). */
-@keyframes glow-fade {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes float-slow {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12px);
-  }
-}
-
-@keyframes scan {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(100vh);
-  }
-}
-
-@keyframes heat-rise {
-  0% {
-    transform: translateY(0) scaleX(1);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(-140px) scaleX(1.6);
-    opacity: 0;
   }
 }
 
@@ -156,203 +74,15 @@
   }
 }
 
-@keyframes ring-spin {
-  to {
-    --ring-angle: 360deg;
-  }
-}
-
-@property --ring-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
-.animate-flicker {
-  animation: flicker 2.8s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  position: relative;
-}
-.animate-pulse-glow::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: inherit;
-  box-shadow: 0 0 40px 10px var(--sk-accent-glow);
-  animation: glow-fade 2.4s ease-in-out infinite;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.animate-float-slow {
-  animation: float-slow 6s ease-in-out infinite;
-  will-change: transform;
-}
-
 .animate-blink {
   animation: blink 1s steps(2) infinite;
-}
-
-/* Gradient sweeps three times on load, then settles: the h1 is the LCP element. */
-.text-fire {
-  background: linear-gradient(110deg, #ffd166, #ff8a3d, #ff3d1f, #ff2d6f, #ffb347);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: gradient-shift 6s ease 3;
-}
-
-.text-glow {
-  text-shadow:
-    0 0 18px rgba(255, 138, 61, 0.55),
-    0 0 46px rgba(255, 45, 111, 0.25);
-}
-
-.glass {
-  background: rgba(18, 11, 16, 0.72);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* Card with an animated conic ring on hover */
-.fire-card {
-  position: relative;
-  isolation: isolate;
-}
-.fire-card::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: conic-gradient(
-    from var(--ring-angle, 0deg),
-    transparent 0%,
-    #ff8a3d 20%,
-    #ff2d6f 40%,
-    transparent 60%
-  );
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  z-index: 1;
-  pointer-events: none;
-}
-.fire-card:hover::before {
-  opacity: 1;
-  animation: ring-spin 2.2s linear infinite;
-}
-
-/* Heat shimmer bars at the bottom of the hero */
-.heat {
-  position: absolute;
-  bottom: 0;
-  width: 2px;
-  height: 90px;
-  border-radius: 999px;
-  background: linear-gradient(to top, rgba(255, 90, 31, 0.7), transparent);
-  animation: heat-rise 3s ease-out infinite;
-  pointer-events: none;
-}
-
-/* Scanline overlay for the AI feel (plain low-alpha overlay, no blend mode) */
-.scanlines::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.035) 0px,
-    rgba(255, 255, 255, 0.035) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  pointer-events: none;
-}
-
-.scan-beam {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 120px;
-  background: linear-gradient(to bottom, transparent, rgba(255, 138, 61, 0.08), transparent);
-  animation: scan 7s linear infinite;
-  pointer-events: none;
-  will-change: transform;
-}
-
-.grid-bg {
-  background-image:
-    linear-gradient(rgba(255, 138, 61, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 138, 61, 0.06) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
-}
-
-/* CSS-only tooltip: <a data-tip="Label" class="tip">. No runtime positioning library needed. */
-.tip {
-  position: relative;
-}
-.tip::after {
-  content: attr(data-tip);
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 8px);
-  translate: -50% 0;
-  white-space: nowrap;
-  padding: 4px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--sk-line);
-  background: var(--sk-surface-2);
-  color: var(--sk-text);
-  font-family: var(--sk-font-sans);
-  font-size: 12px;
-  font-weight: 500;
-  opacity: 0;
-  scale: 0.95;
-  transition:
-    opacity 0.15s ease,
-    scale 0.15s ease;
-  pointer-events: none;
-}
-.tip:hover::after,
-.tip:focus-visible::after {
-  opacity: 1;
-  scale: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  .animate-flicker,
-  .animate-pulse-glow::after,
-  .animate-float-slow,
-  .animate-blink,
-  .animate-ping,
-  .animate-bounce,
-  .animate-pulse,
-  .text-fire,
-  .heat,
-  .scan-beam,
-  .fire-card:hover::before {
+  .animate-blink {
     animation: none;
-  }
-  .animate-pulse-glow::after {
-    opacity: 0.6;
-  }
-  .tip::after {
-    transition: none;
   }
 }

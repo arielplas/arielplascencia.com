@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import config, { yearsOfExperience } from './portfolio.config'
+import config, { levelProgress, sectionTitle, yearsOfExperience } from './portfolio.config'
 
 const ICONS = ['github', 'linkedin', 'resume'] as const
 
@@ -42,5 +42,26 @@ describe('portfolio config invariants', () => {
       expect(e.period).toMatch(/^[A-Z][a-z]{2} \d{4} - ([A-Z][a-z]{2} \d{4}|Present)$/)
     }
     expect(yearsOfExperience(config.experience, new Date('2026-09-17'))).toBe(6)
+  })
+
+  it('level progress is the share of the current career year, 0–100', () => {
+    // Career starts Oct 2019: mid-April is about half way through a year.
+    expect(levelProgress(config.experience, new Date('2026-04-01'))).toBeGreaterThan(45)
+    expect(levelProgress(config.experience, new Date('2026-04-01'))).toBeLessThan(55)
+    expect(levelProgress(config.experience, new Date('2026-10-02'))).toBeLessThan(2)
+  })
+
+  it('fills {years} in section titles', () => {
+    expect(sectionTitle(config.sections.about, 7)).toBe('7 years in the game')
+  })
+
+  it('marks exactly one featured project', () => {
+    expect(config.projects.filter((p) => p.featured)).toHaveLength(1)
+  })
+
+  it('skill codes fit the card hexagon', () => {
+    for (const group of config.skillGroups) {
+      for (const skill of group.items) expect(skill.code.length, skill.name).toBeLessThanOrEqual(2)
+    }
   })
 })

@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import '@fontsource/archivo/700.css'
-import '@fontsource/archivo/900.css'
-import '@fontsource-variable/inter'
+// Archivo with both axes: weight for body copy, width (wdth) for the expanded display caps.
+import '@fontsource-variable/archivo/wdth.css'
+import '@fontsource-variable/archivo/wdth-italic.css'
 import '@fontsource-variable/jetbrains-mono'
 import './index.css'
 import App from './App.tsx'

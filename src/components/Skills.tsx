@@ -1,57 +1,90 @@
 import type { FC } from 'react'
-import { Card, Chip, Text } from 'sukuna-ui'
+import { LootReveal, Tabs } from '@sukunagg/ui'
+import type { LootRarity, LootRevealItem } from '@sukunagg/ui'
+import type { SkillGroup, SkillTier } from '../config/portfolio.config'
 import config from '../config/portfolio.config'
-import { ChipIcon } from './Icons'
-import { NeuralNet } from './NeuralNet'
+import { useInView } from '../hooks/useInView'
 import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 
-const TONES = ['accent', 'premium', 'neutral'] as const
+const RARITY: Record<SkillTier, LootRarity> = {
+  main: 'legendary',
+  daily: 'epic',
+  proficient: 'rare',
+}
+
+const RARITY_LABELS: Partial<Record<LootRarity, string>> = {
+  legendary: 'Main',
+  epic: 'Daily',
+  rare: 'Proficient',
+}
+
+const LEGEND = [
+  { label: 'Main — first pick', swatch: 'bg-premium' },
+  { label: 'Daily — in every project', swatch: 'bg-chart-5' },
+  { label: 'Proficient — shipped with it', swatch: 'bg-chart-2' },
+]
+
+const toItems = (group: SkillGroup): LootRevealItem[] =>
+  group.items.map((skill) => ({
+    name: skill.name,
+    kind: skill.kind,
+    rarity: RARITY[skill.tier],
+    icon: <span className="display-caps text-2xl">{skill.code}</span>,
+  }))
+
+/** A skill group's cards. LootReveal plays on mount, so nothing mounts until it is on screen. */
+const Loadout: FC<{ group: SkillGroup; play: boolean }> = ({ group, play }) =>
+  play ? (
+    <LootReveal
+      aria-label={`${group.label} loadout`}
+      items={toItems(group)}
+      rarityLabels={RARITY_LABELS}
+      className="mx-auto max-w-3xl overflow-x-visible"
+    />
+  ) : (
+    <div className="min-h-56" aria-hidden="true" />
+  )
 
 export const Skills: FC = () => {
+  const [ref, inView] = useInView<HTMLDivElement>(0.3)
+
   return (
-    <section id="skills" className="relative py-28 overflow-clip">
-      <NeuralNet density={0.14} />
-      <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--sk-bg)_85%)]"
-        aria-hidden="true"
-      />
-      <div className="relative max-w-6xl mx-auto px-6">
+    <section
+      id="skills"
+      aria-labelledby="skills-title"
+      className="relative overflow-clip border-y border-line-soft bg-[linear-gradient(180deg,var(--sk-bg),var(--sk-surface)_50%,var(--sk-bg))] py-24 sm:py-32"
+    >
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
-          <SectionHeading copy={config.sections.skills} className="mb-14" />
+          <SectionHeading copy={config.sections.skills} index={2} id="skills-title" />
         </Reveal>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {config.skillGroups.map((group, g) => (
-            <Reveal key={group.label} delay={100 + g * 100} className="h-full">
-              <Card elevation="raised" padding="lg" className="fire-card glass h-full">
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="relative flex h-2.5 w-2.5" aria-hidden="true">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-75 animate-ping" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
-                  </span>
-                  <Text as="h3" font="display" weight="bold" size="lg">
-                    {group.label}
-                  </Text>
+        <div ref={ref} className="mt-12">
+          <Tabs
+            aria-label="Skill groups"
+            variant="pill"
+            defaultValue={config.skillGroups[0].label}
+            items={config.skillGroups.map((group) => ({
+              value: group.label,
+              label: group.label,
+              content: (
+                <div className="pt-12">
+                  <Loadout group={group} play={inView} />
                 </div>
-                <ul className="flex flex-wrap gap-2.5">
-                  {group.items.map((skill, i) => (
-                    <li key={skill}>
-                      <Chip
-                        tone={TONES[(g + i) % TONES.length]}
-                        size="md"
-                        leadingIcon={<ChipIcon className="w-3.5 h-3.5" />}
-                        className="cursor-default transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(255,90,31,0.45)] hover:border-ember/60"
-                      >
-                        {skill}
-                      </Chip>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-            </Reveal>
-          ))}
+              ),
+            }))}
+          />
         </div>
+
+        <ul className="hud m-0 mt-10 flex list-none flex-wrap justify-center gap-x-7 gap-y-2.5 p-0 text-[11px] text-text-dim">
+          {LEGEND.map((item) => (
+            <li key={item.label} className="inline-flex items-center gap-2">
+              <span className={`size-2.5 rounded-[2px] ${item.swatch}`} aria-hidden="true" />
+              {item.label}
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )

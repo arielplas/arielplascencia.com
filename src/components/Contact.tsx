@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import type { FC, FormEvent } from 'react'
-import { Button, Card } from 'sukuna-ui'
+import { FlowField } from '@sukunagg/fx'
+import { Button, Card, Spinner } from '@sukunagg/ui'
 import config from '../config/portfolio.config'
 import { trackCta } from '../lib/analytics'
-import { FireParticles } from './FireParticles'
 import { MailIcon, SocialIcon } from './Icons'
-import { Reveal } from './Reveal'
 import { SectionHeading } from './SectionHeading'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
@@ -17,7 +16,7 @@ const INTENTS = [
 ]
 
 const field =
-  'w-full rounded-md border border-line bg-well px-4 py-3 text-md text-text placeholder:text-text-faint ' +
+  'w-full rounded-md border border-line bg-well/80 px-4 py-3 text-md text-text placeholder:text-text-faint ' +
   'transition-[border-color,box-shadow] duration-fast focus:outline-none focus:border-accent focus:ring-2 focus:ring-focus-ring/40'
 
 const label = 'block text-sm font-semibold text-text-dim mb-1.5'
@@ -65,26 +64,31 @@ export const Contact: FC = () => {
   }
 
   return (
-    <section id="contact" className="relative py-32 overflow-clip">
-      <div
-        className="absolute inset-x-0 bottom-0 h-[60vh] bg-[radial-gradient(ellipse_at_bottom,rgba(255,90,31,0.32),rgba(255,45,111,0.08)_45%,transparent_70%)]"
-        aria-hidden="true"
-      />
-      <FireParticles density={0.6} interactive={false} />
-
-      <div className="relative max-w-6xl mx-auto px-6">
-        <Reveal>
+    <section id="contact" aria-labelledby="contact-title" className="relative">
+      {/* The field calms once the invite is sent: the search is over. */}
+      <FlowField calm={status === 'sent'} className="min-h-0 py-24 sm:py-32">
+        <div className="mx-auto w-full max-w-2xl px-4 sm:px-6">
           <SectionHeading
             copy={config.sections.contact}
-            titleClassName="text-glow"
-            className="mb-12"
+            index={5}
+            id="contact-title"
+            align="center"
           />
-        </Reveal>
 
-        <Reveal delay={150}>
-          <Card elevation="raised" padding="lg" className="fire-card glass max-w-2xl mx-auto">
+          <p className="hud mt-7 flex items-center justify-center gap-3 text-text-dim">
+            {status === 'sent' ? (
+              <span className="text-success">Invite sent — I'll reply within a day or two.</span>
+            ) : (
+              <>
+                <Spinner size="sm" aria-hidden="true" />
+                Searching for my next team…
+              </>
+            )}
+          </p>
+
+          <Card elevation="raised" padding="lg" className="mt-10 bg-surface/85 backdrop-blur-sm">
             <form onSubmit={onSubmit} noValidate={false} className="grid gap-5">
-              <div className="grid sm:grid-cols-2 gap-5">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label htmlFor="contact-name" className={label}>
                     Name
@@ -147,29 +151,25 @@ export const Contact: FC = () => {
                 className="hidden"
               />
 
-              <div className="flex flex-wrap items-center gap-4 pt-2">
+              <div className="flex flex-wrap items-center gap-4 pt-1">
                 <Button
                   type="submit"
                   size="lg"
                   loading={status === 'sending'}
-                  leadingIcon={<MailIcon className="w-5 h-5" />}
-                  className="animate-pulse-glow"
+                  leadingIcon={<MailIcon className="size-5" />}
                 >
-                  Send message
+                  Accept — send invite
                 </Button>
                 <a
                   href={`mailto:${config.email}`}
                   onClick={() => trackCta('contact_mailto')}
-                  className="text-sm font-mono text-text-dim hover:text-blaze transition-colors py-2"
+                  className="hud py-2 text-[12px] tracking-[0.08em] text-premium normal-case no-underline hover:text-text"
                 >
                   or email {config.email}
                 </a>
               </div>
 
-              <p role="status" aria-live="polite" className="text-sm min-h-5">
-                {status === 'sent' && (
-                  <span className="text-success">Sent. I'll reply within a day or two.</span>
-                )}
+              <p role="status" aria-live="polite" className="m-0 min-h-5 text-sm">
                 {status === 'error' && (
                   <span className="text-text-dim">
                     The form could not be sent, so I opened your mail client with the message
@@ -179,27 +179,27 @@ export const Contact: FC = () => {
               </p>
             </form>
           </Card>
-        </Reveal>
 
-        <Reveal delay={250}>
-          <div className="flex items-center justify-center gap-6 mt-14">
+          <ul className="m-0 mt-8 flex list-none flex-wrap justify-center gap-2.5 p-0">
             {config.socials.map((social) => (
-              <a
-                key={social.label}
-                href={social.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${social.label} (opens in a new tab)`}
-                onClick={() => trackCta('social', { network: social.label })}
-                className="inline-flex items-center gap-2 py-2 text-text-dim hover:text-blaze text-sm font-semibold transition-all hover:-translate-y-0.5"
-              >
-                <SocialIcon icon={social.icon} className="w-4 h-4" />
-                {social.label}
-              </a>
+              <li key={social.label}>
+                <Button
+                  as="a"
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="secondary"
+                  leadingIcon={<SocialIcon icon={social.icon} className="size-4" />}
+                  onClick={() => trackCta('social', { network: social.label })}
+                >
+                  {social.label}
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </Button>
+              </li>
             ))}
-          </div>
-        </Reveal>
-      </div>
+          </ul>
+        </div>
+      </FlowField>
     </section>
   )
 }

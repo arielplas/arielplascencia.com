@@ -68,29 +68,6 @@ export const ExternalIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
   </svg>
 )
 
-export const BoltIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
-  </svg>
-)
-
-export const ChipIcon: FC<IconProps> = ({ className = 'w-5 h-5' }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
-    <rect x="7" y="7" width="10" height="10" rx="2" strokeWidth={2} />
-    <path
-      strokeWidth={2}
-      strokeLinecap="round"
-      d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"
-    />
-  </svg>
-)
-
 const SOCIAL_ICONS: Record<SocialIconName, FC<IconProps>> = {
   github: GithubIcon,
   linkedin: LinkedinIcon,

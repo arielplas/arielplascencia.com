@@ -26,6 +26,10 @@ export interface Project {
   outcome?: string
   /** Path under public/, e.g. "/projects/centavos.webp" (800×500). */
   image?: string
+  /** Shown first, in the beamed "featured mission" card. Mark exactly one project. */
+  featured?: boolean
+  /** Short mark drawn on the cover when there is no `image`. Defaults to the title's initials. */
+  glyph?: string
 }
 
 export interface Experience {
@@ -35,14 +39,35 @@ export interface Experience {
   description: string
 }
 
+/**
+ * How much you use a skill. Drawn as a loot rarity: main = legendary, daily = epic,
+ * proficient = rare.
+ */
+export type SkillTier = 'main' | 'daily' | 'proficient'
+
+export interface Skill {
+  name: string
+  /** Chip at the top of the card: "Language", "Database". */
+  kind: string
+  /** Two-letter mark in the card's hexagon. */
+  code: string
+  tier: SkillTier
+}
+
 export interface SkillGroup {
   label: string
-  items: string[]
+  items: Skill[]
 }
 
 export interface SectionCopy {
+  /** Game-flavoured label above the title. */
   eyebrow: string
-  /** Full title. The `highlight` substring is rendered with the fire gradient. */
+  /** Short label for the navigation. */
+  nav: string
+  /**
+   * Full title. The `highlight` substring is rendered in the accent color. `{years}` is replaced
+   * with the years of experience.
+   */
   title: string
   highlight?: string
   subtitle?: string
@@ -53,12 +78,14 @@ export interface PortfolioConfig {
   title: string
   siteUrl: string
   location: string
+  /** Time zones you overlap with, shown on the hero floor. */
+  region: string
   /** Shown in the hero badge. Be specific: what kind of work, which time zones. */
   availability: string
+  /** One line under the hero title. */
+  tagline: string
   about: string
   email: string
-  /** Words cycled by the hero typewriter. The first one is shown when motion is reduced. */
-  heroWords: string[]
   nav: SectionId[]
   socials: SocialLink[]
   skillGroups: SkillGroup[]
@@ -72,7 +99,9 @@ const config: PortfolioConfig = {
   title: 'Full-Stack Developer',
   siteUrl: 'https://arielplascencia.com',
   location: 'Mexico',
+  region: 'US + MX',
   availability: 'Open to remote full-time and contract work',
+  tagline: 'Fast, AI-assisted web products with React, Next.js and TypeScript.',
   // TODO(ariel): this is a draft written from your experience entries. Make it yours.
   about:
     "I'm a full-stack engineer based in Mexico. Since 2023 I've been at The Shift Network, " +
@@ -81,7 +110,6 @@ const config: PortfolioConfig = {
     'Science and shipped zero-to-one products for startups and agencies. I care about clean ' +
     'code, great UX and fast delivery, and I work well with US and Mexico time zones.',
   email: 'imariel2d@gmail.com',
-  heroWords: ['fast', 'powerful', 'AI-assisted', 'accessible', 'beautiful'],
   nav: ['about', 'skills', 'projects', 'experience', 'contact'],
 
   socials: [
@@ -95,10 +123,36 @@ const config: PortfolioConfig = {
     },
   ],
 
+  // TODO(ariel): the tiers are a first guess. Main = you reach for it first, daily = in every
+  // project, proficient = shipped real work with it.
   skillGroups: [
-    { label: 'Core', items: ['TypeScript', 'React', 'Next.js', 'Node.js'] },
-    { label: 'Data & infra', items: ['PostgreSQL', 'Docker', 'CI/CD', 'Vercel'] },
-    { label: 'Tooling & AI', items: ['Tailwind CSS', 'Testing', 'AI-assisted tooling', 'Git'] },
+    {
+      label: 'Core',
+      items: [
+        { name: 'TypeScript', kind: 'Language', code: 'TS', tier: 'main' },
+        { name: 'React', kind: 'Library', code: 'Re', tier: 'main' },
+        { name: 'Next.js', kind: 'Framework', code: 'Nx', tier: 'main' },
+        { name: 'Node.js', kind: 'Runtime', code: 'Nd', tier: 'daily' },
+      ],
+    },
+    {
+      label: 'Data & infra',
+      items: [
+        { name: 'PostgreSQL', kind: 'Database', code: 'Pg', tier: 'daily' },
+        { name: 'Docker', kind: 'Containers', code: 'Dk', tier: 'proficient' },
+        { name: 'CI/CD', kind: 'Pipelines', code: 'CI', tier: 'daily' },
+        { name: 'Vercel', kind: 'Hosting', code: 'Vc', tier: 'daily' },
+      ],
+    },
+    {
+      label: 'Tooling & AI',
+      items: [
+        { name: 'Tailwind CSS', kind: 'Styling', code: 'Tw', tier: 'main' },
+        { name: 'Testing', kind: 'Quality', code: 'Te', tier: 'daily' },
+        { name: 'AI-assisted tooling', kind: 'Workflow', code: 'AI', tier: 'main' },
+        { name: 'Git', kind: 'Versioning', code: 'Gt', tier: 'main' },
+      ],
+    },
   ],
 
   projects: [
@@ -110,6 +164,8 @@ const config: PortfolioConfig = {
       tags: ['Fintech', 'Budgeting', 'Web App'],
       liveUrl: 'https://centavos.mx/',
       role: 'Founder & developer',
+      featured: true,
+      glyph: '$¢',
     },
     {
       title: 'Duckstore',
@@ -189,30 +245,35 @@ const config: PortfolioConfig = {
 
   sections: {
     about: {
-      eyebrow: 'About me',
-      title: 'Engineering with firepower',
-      highlight: 'firepower',
+      eyebrow: 'Player profile',
+      nav: 'Profile',
+      title: '{years} years in the game',
+      highlight: 'in the game',
     },
     skills: {
-      eyebrow: 'Tech stack',
-      title: 'Skills & Technologies',
-      highlight: 'Technologies',
+      eyebrow: 'Loadout',
+      nav: 'Loadout',
+      title: 'Skills & technologies',
+      highlight: 'technologies',
       subtitle: 'The tools I reach for daily, grouped by where they fit.',
     },
     projects: {
-      eyebrow: 'My work',
-      title: 'Featured Projects',
-      highlight: 'Projects',
-      subtitle: "Things I've built, shipped and set on fire (in a good way).",
+      eyebrow: 'Missions',
+      nav: 'Missions',
+      title: 'Featured projects',
+      highlight: 'projects',
+      subtitle: "Things I've built and shipped.",
     },
     experience: {
-      eyebrow: 'Career',
-      title: 'Trail of Fire',
-      highlight: 'Fire',
+      eyebrow: 'Match history',
+      nav: 'Match history',
+      title: 'Experience',
+      highlight: 'Experience',
       subtitle: "Where I've been leveling up.",
     },
     contact: {
-      eyebrow: 'Get in touch',
+      eyebrow: 'Party up',
+      nav: 'Party up',
       title: "Let's build something unstoppable",
       highlight: 'unstoppable',
       subtitle: 'Hiring for a role or have a project in mind? Tell me about it.',
@@ -220,12 +281,30 @@ const config: PortfolioConfig = {
   },
 }
 
+const careerStart = (experience: Experience[]): number => {
+  const starts = experience.map((e) => Date.parse(`1 ${e.period.split(' - ')[0]}`))
+  return Math.min(...starts.filter((t) => !Number.isNaN(t)))
+}
+
+const YEAR_MS = 365.25 * 24 * 3600 * 1000
+
 /** Whole years since the earliest experience entry started. */
 export const yearsOfExperience = (experience: Experience[], now = new Date()): number => {
-  const starts = experience.map((e) => Date.parse(`1 ${e.period.split(' - ')[0]}`))
-  const earliest = Math.min(...starts.filter((t) => !Number.isNaN(t)))
+  const earliest = careerStart(experience)
   if (!Number.isFinite(earliest)) return 0
-  return Math.floor((now.getTime() - earliest) / (365.25 * 24 * 3600 * 1000))
+  return Math.floor((now.getTime() - earliest) / YEAR_MS)
 }
+
+/** Percent (0–100) of the way from the current career "level" (whole year) to the next. */
+export const levelProgress = (experience: Experience[], now = new Date()): number => {
+  const earliest = careerStart(experience)
+  if (!Number.isFinite(earliest)) return 0
+  const years = (now.getTime() - earliest) / YEAR_MS
+  return Math.round((years - Math.floor(years)) * 100)
+}
+
+/** The title with `{years}` filled in. */
+export const sectionTitle = (copy: SectionCopy, years: number): string =>
+  copy.title.replace('{years}', String(years))
 
 export default config

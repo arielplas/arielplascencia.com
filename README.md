@@ -7,9 +7,9 @@ Personal portfolio of Ariel Plascencia, full-stack developer. Live at
 
 - React 19, TypeScript, Vite 5
 - Tailwind CSS v4 through `@tailwindcss/vite`
-- [`sukuna-ui`](https://www.npmjs.com/package/sukuna-ui) component library, themed by
-  overriding its `--sk-*` tokens in `src/index.css` (fire / power / AI palette)
-- Canvas effects: `FireParticles` (ember particles) and `NeuralNet` (node mesh)
+- [`@sukunagg/ui`](https://www.npmjs.com/package/@sukunagg/ui) components and
+  [`@sukunagg/fx`](https://www.npmjs.com/package/@sukunagg/fx) effects (HoloCard, FlowField),
+  with the library's crimson `--sk-*` palette and Archivo set in `src/index.css`
 - Vercel for hosting, analytics and the `api/contact` serverless function
 
 ## Develop
@@ -40,8 +40,10 @@ subtitle. To add a project, append to `projects`. Optional `role`, `stack`, `yea
 and `image` fields turn a card into a mini case study; put images in `public/projects/`
 (800×500).
 
-Stats in the About section are derived from that data (years since the earliest experience
-entry, number of projects, number of companies), so they never go stale.
+Stats on the hero floor and the career level are derived from that data (years since the
+earliest experience entry, number of projects, number of companies), so they never go stale.
+Skills carry a `tier` (main / daily / proficient) drawn as a loot rarity; mark one project
+`featured` for the beamed card.
 
 ## Contact form
 
