@@ -1,11 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The site's hexagon "AP" mark: crimson accent gradient, white expanded black-italic letters. -->
   <defs>
-    <linearGradient id="g" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0" stop-color="#c9220f"/>
-      <stop offset="0.5" stop-color="#ff5a1f"/>
-      <stop offset="1" stop-color="#ffd166"/>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff3b4e"/>
+      <stop offset="1" stop-color="#b01221"/>
     </linearGradient>
   </defs>
-  <path fill="url(#g)" d="M32 4c2 10 12 14 12 26 0 4-1 7-3 10 5-2 8-7 8-13 6 6 9 13 9 20 0 11-11 17-26 17S6 58 6 47c0-9 5-15 10-20 0 5 2 8 5 10-2-14 6-22 11-33z"/>
-  <path fill="#fff7ed" opacity="0.9" d="M32 30c2 6 8 8 8 15 0 6-4 9-8 9s-8-3-8-9c0-4 2-6 4-8 0 3 1 4 3 5-1-5 0-8 1-12z"/>
+  <path fill="url(#g)" d="M16 2h32l16 30-16 30H16L0 32z"/>
+  <g fill="#fff" fill-rule="evenodd" transform="translate(32 32) scale(.92) translate(-32 -32) translate(7.8 0) skewX(-12)">
+    <path d="M10 44 17 20h6l7 24h-6.5l-1.3-4.5h-4.4L16.5 44zm8.6-9.2h2.8L20 29.5z"/>
+    <path d="M32 20h13c4.4 0 7 2.8 7 7.5S49.4 35 45 35h-6v9h-7zm7 5v5h5c1.3 0 2-1 2-2.5S45.3 25 44 25z"/>
+  </g>
 </svg>
